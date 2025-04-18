@@ -309,13 +309,6 @@ def show_main_page():
 
 
 
-
-
-
-
-
-
-
     # 로그아웃 버튼
     if st.sidebar.button("로그아웃"):
         st.session_state["logged_in"] = False
