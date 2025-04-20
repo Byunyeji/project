@@ -7,7 +7,7 @@ from .generate_report import (
 )
 
 __all__ = [
-    "plot_emotion_trend",
+    "plot_emotion_trend_plotly",  
     "get_emotion_report",
     "create_pdf_report",
     "create_emotion_heatmap_data",
