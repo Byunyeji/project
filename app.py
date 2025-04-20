@@ -247,22 +247,22 @@ def show_main_page():
         report_df["분석 날짜"] = pd.to_datetime(report_df["분석 날짜"]).dt.date
         min_date, max_date = report_df["분석 날짜"].agg(["min", "max"])
 
-        # 1) 필터 영역 - 기간, 집계 단위, 감정 선택
+        # 1) 필터
         with st.sidebar:
             st.subheader("필터")
             start_date = st.date_input("시작일", value=min_date, min_value=min_date, max_value=max_date)
-            end_date   = st.date_input("종료일", value=max_date, min_value=min_date, max_value=max_date)
+            end_date = st.date_input("종료일", value=max_date, min_value=min_date, max_value=max_date)
             period = st.radio("집계 단위", ["일별", "주별", "월별"], horizontal=True)
-
             emotions = sorted(report_df["감정"].unique())
-            selected = st.multiselect("표시할 감정 선택", emotions, default=emotions)
-        
-        # 2) 일/주/월 감정 트렌드 matplotlib 그래프
+            st.multiselect("표시할 감정 선택", emotions, default=emotions)  # ← 여기만 보여주기 용, 필터링 기능 없음
+
+        # 2) 감정 트렌드 그래프 (matplotlib용)
         fig = plot_emotion_trend_plotly(username, start_date, end_date, period)
         if fig is not None:
-            st.pyplot(fig)  # 👉 matplotlib용 출력 함수
+            st.pyplot(fig)
         else:
             st.warning("해당 기간에 감정 데이터가 없어 그래프를 표시할 수 없습니다.")
+
 
 
         # 3) 공부 집비율 도넛/파이 차트
@@ -270,7 +270,7 @@ def show_main_page():
         study_df = report_df[report_df["감정 카테고리"] == "공부"]
         study_pie = px.pie(study_df, names="감정", hole=0.45, title="공부 감정 분포")
         st.plotly_chart(study_pie, use_container_width=True)
-        
+
         # 4) 감정 히트맵 (x: 요일, y: 주차별 평균 valence)
         st.subheader("🧊 감정 히트맵")
         heatmap_df = create_emotion_heatmap_data(report_df)
@@ -355,3 +355,4 @@ show_main_page()
 #     show_login_page()
 # else:
 #     show_main_page()
+
