@@ -269,8 +269,8 @@ def show_main_page():
         st.subheader("📚 공부 감정 비율")
         study_df = report_df[report_df["감정 카테고리"] == "공부"]
         study_pie = px.pie(study_df, names="감정", hole=0.45, title="공부 감정 분포")
-        st.pyplot(fig)
-
+        st.plotly_chart(study_pie, use_container_width=True)
+        
         # 4) 감정 히트맵 (x: 요일, y: 주차별 평균 valence)
         st.subheader("🧊 감정 히트맵")
         heatmap_df = create_emotion_heatmap_data(report_df)
