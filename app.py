@@ -259,11 +259,15 @@ def show_main_page():
             selected = st.multiselect("표시할 감정 선택", emotions, default=emotions)
         
         # 2) 일/주/월 감정 트렌드 matplotlib 그래프
-        fig = plot_emotion_trend_plotly(username, start_date, end_date, period)
-        if fig:
-            st.pyplot(fig)  # matplotlib 그래프를 Streamlit에 출력
+        fig = plot_emotion_trend_plotly(username, start_date, end_date, period, report_df)
+        if fig is not None:
+            if selected:
+                fig = fig.for_each_trace(
+                    lambda t: t.update(visible="legendonly") if t.name not in selected else ()
+                )
+            st.plotly_chart(fig, use_container_width=True)
         else:
-            st.warning("해당 기간에 감정 데이터가 없습니다.")
+            st.warning("해당 기간에 감정 데이터가 없어 그래프를 표시할 수 없습니다.")
 
 
         # 3) 공부 집비율 도넛/파이 차트
