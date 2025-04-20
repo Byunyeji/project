@@ -261,7 +261,7 @@ def show_main_page():
 
         # 3) 공부 집비율 도넛/파이 차트
         st.subheader("📚 공부 감정 비율")
-        study_df = report_df[report_df["카테고리"] == "공부"]
+        study_df = report_df[report_df["감정 카테고리"] == "공부"]
         study_pie = px.pie(study_df, names="감정", hole=0.45, title="공부 감정 분포")
         st.plotly_chart(study_pie, use_container_width=True)
 
