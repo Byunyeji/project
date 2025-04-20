@@ -27,8 +27,7 @@ label_list = [
     "걱정/고민/긴장"
 ]
 
-
-def plot_emotion_trend_plotly(
+def plot_emotion_trend(
     login_id: str,
     start_date,
     end_date,
