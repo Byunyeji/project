@@ -1,4 +1,3 @@
-import plotly.express as px
 import os
 import tempfile
 import speech_recognition as sr
@@ -6,19 +5,13 @@ import re
 from datetime import date
 from backend.auth import register, login
 from backend.chatbot import generate_response
+from reports import plot_emotion_trend, get_emotion_report, create_pdf_report
 import pandas as pd
 import matplotlib.pyplot as plt
 from backend.db import get_region_list
 from backend.log_emotions import log_emotion
-from reports import (
-    plot_emotion_trend_plotly,
-    get_emotion_report,
-    create_pdf_report,
-    create_emotion_heatmap_data,
-    calc_emotion_change,
-)
-import streamlit as st
 
+import streamlit as st
 
 # ▶ 페이지 설정
 st.set_page_config(page_title="WEAKEND 감정 챗봇", layout="centered")
@@ -53,7 +46,6 @@ st.markdown("""
         .chat-bubble {
             display: flex;
             gap: 10px;
-
             align-items: flex-start;
         }
 
@@ -166,6 +158,7 @@ def show_login_page():
                 else:
                     st.error(msg)
 
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 2) 메인 (챗봇/리포트) 페이지 함수
 #    (기존 3개 탭: 내 감정 입력하기, 감정 리포트, 리포트 다운로드)
@@ -238,56 +231,74 @@ def show_main_page():
         st.markdown('</div>', unsafe_allow_html=True)
 
 
-  # 2️⃣ 감정 리포트 탭 (기존 코드 유지)
-        # ──────────────────────────────
-
     # ──────────────────────────────
+    # 2️⃣ 감정 리포트 탭 (기존 코드 유지)
+        # ──────────────────────────────
     elif page == "감정 리포트":
         st.title("📊 감정 변화 트렌드")
 
+        # — 1) 조회 기간
+        # report_df = get_emotion_report(username)
+        # report_df["분석 날짜"] = pd.to_datetime(report_df["분석 날짜"]).dt.date
+        # min_date = report_df["분석 날짜"].min()
+        # max_date = report_df["분석 날짜"].max()
+
+        # start_date, end_date = st.date_input(
+        #     "조회 기간",                 # 첫 번째 인자는 레이블
+        #     [min_date, max_date],       # 리스트 형태로 범위 지정
+        #     min_value=min_date,
+        #     max_value=max_date,
+        #     key="date_range"             # key만 붙여주세요
+        # )
+
+
         report_df = get_emotion_report(username)
         report_df["분석 날짜"] = pd.to_datetime(report_df["분석 날짜"]).dt.date
-        min_date, max_date = report_df["분석 날짜"].agg(["min", "max"])
+        min_date = report_df["분석 날짜"].min()
+        max_date = report_df["분석 날짜"].max()
 
-        # 1) 기간 · 집계 단위
-        with st.sidebar:
-            st.subheader("필터")
-            start_date = st.date_input("시작일", value=min_date,
-                                    min_value=min_date, max_value=max_date)
-            end_date   = st.date_input("종료일", value=max_date,
-                                    min_value=min_date, max_value=max_date)
-            period = st.radio("집계 단위", ["일별", "주별", "월별"], horizontal=True)
-
-            emotions = sorted(report_df["감정"].unique())
-            selected = st.multiselect("표시할 감정 선택", emotions, default=emotions)
-
-        # 2) 인터랙티브 차트
-        fig = plot_emotion_trend_plotly(username, start_date, end_date, period, report_df)
-        if selected:
-            fig = fig.for_each_trace(
-                lambda t: t.update(visible="legendonly")
-                if t.name not in selected else ()
-            )
-        st.plotly_chart(fig, use_container_width=True)
-
-        # 3) 긍·부 파이 차트
-        col1, col2 = st.columns([2,1])
-        with col2:
-            pos_ratio = (report_df["대분류"] == "긍정").mean()
-            st.metric("긍정 비율", f"{pos_ratio*100: .1f}%")
+        col1, col2 = st.columns(2)
         with col1:
-            pie = px.pie(report_df, names="대분류", hole=.45,
-                        title="Positive vs Negative")
-            st.plotly_chart(pie, use_container_width=True)
+            start_date = st.date_input(
+                label="시작일",
+                value=min_date,
+                min_value=min_date,
+                max_value=max_date,
+                key="start_date"
+            )
+        with col2:
+            end_date = st.date_input(
+                label="종료일",
+                value=max_date,
+                min_value=min_date,
+                max_value=max_date,
+                key="end_date"
+            )
 
-        # 4) PDF 다운로드
-        with st.container():
+        # — 2) 집계 단위
+        period = st.radio(
+            "집계 단위",
+            ["일별", "주별", "월별"],
+            index=0,
+            horizontal=True
+        )
+
+        # — 3) 차트 그리기
+        fig = plot_emotion_trend(username, start_date, end_date, period)
+        if fig:
+            st.pyplot(fig)
+        else:
+            st.warning("선택한 기간에는 감정 데이터가 없습니다.")
+
+        # — 4) PDF 다운로드 버튼 가운데 정렬
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
             pdf_bytes = create_pdf_report(username)
             st.download_button(
-                "📥 리포트 PDF 다운로드",
-                pdf_bytes,
+                label="📥 리포트 PDF 다운로드",
+                data=pdf_bytes,
                 file_name=f"{username}_감정리포트_{date.today()}.pdf",
-                mime="application/pdf",
+                mime="application/pdf"
             )
 
     # ──────────────────────────────
@@ -295,7 +306,14 @@ def show_main_page():
     # ──────────────────────────────
     elif page == "맞춤형 컨텐츠 추천":
         st.title("맞춤형 컨텐츠 추천")
-      
+
+
+
+
+
+
+
+
 
 
 
@@ -332,4 +350,3 @@ show_main_page()
 #     show_login_page()
 # else:
 #     show_main_page()
-
