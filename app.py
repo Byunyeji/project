@@ -233,6 +233,7 @@ def show_main_page():
 
 
     # 2️⃣ 감정 리포트 탭 (리팩토링)
+    # 2️⃣ 감정 리포트 탭 (리팩토링)
     elif page == "감정 리포트":
         st.title("📊 감정 변화 트렌드")
 
@@ -247,17 +248,16 @@ def show_main_page():
             end_date   = st.date_input("종료일", value=max_date, min_value=min_date, max_value=max_date)
             period = st.radio("집계 단위", ["일별", "주별", "월별"], horizontal=True)
 
-            emotions = sorted(report_df["감정 카테고리"].unique())
+            emotions = sorted(report_df["감정"].unique())
             selected = st.multiselect("표시할 감정 선택", emotions, default=emotions)
 
         # 2) 일/주/월 감정 트렌드 Plotly 그래프
-       # 2) 일/주/월 감정 트렌드 matplotlib 그래프
-        fig = plot_emotion_trend(username, start_date, end_date, period)
-        if fig:
-            st.pyplot(fig)  # matplotlib 그림 출력
-        else:
-            st.warning("해당 기간에 감정 데이터가 없습니다.")
-
+        fig = plot_emotion_trend_plotly(username, start_date, end_date, period, report_df)
+        if selected:
+            fig = fig.for_each_trace(
+                lambda t: t.update(visible="legendonly") if t.name not in selected else ()
+            )
+        st.plotly_chart(fig, use_container_width=True)
 
         # 3) 공부 집비율 도넛/파이 차트
         st.subheader("📚 공부 감정 비율")
@@ -278,7 +278,7 @@ def show_main_page():
 
         # 5) TOP N 감정 키워드 (자주 등장한 감정 상위 N개)
         st.subheader("🔝 감정 키워드 TOP 5")
-        top_n = report_df["감정 카테고리"].value_counts().nlargest(5).reset_index()
+        top_n = report_df["감정"].value_counts().nlargest(5).reset_index()
         top_n.columns = ["감정", "빈도수"]
         fig_bar = px.bar(top_n, x="감정", y="빈도수", title="최근 자주 느낀 감정 Top 5")
         st.plotly_chart(fig_bar, use_container_width=True)
