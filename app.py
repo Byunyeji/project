@@ -247,7 +247,7 @@ def show_main_page():
             end_date   = st.date_input("종료일", value=max_date, min_value=min_date, max_value=max_date)
             period = st.radio("집계 단위", ["일별", "주별", "월별"], horizontal=True)
 
-            emotions = sorted(report_df["감정"].unique())
+            emotions = sorted(report_df["감정 카테고리리"].unique())
             selected = st.multiselect("표시할 감정 선택", emotions, default=emotions)
 
         # 2) 일/주/월 감정 트렌드 Plotly 그래프
@@ -277,7 +277,7 @@ def show_main_page():
 
         # 5) TOP N 감정 키워드 (자주 등장한 감정 상위 N개)
         st.subheader("🔝 감정 키워드 TOP 5")
-        top_n = report_df["감정"].value_counts().nlargest(5).reset_index()
+        top_n = report_df["감정 카테고리"].value_counts().nlargest(5).reset_index()
         top_n.columns = ["감정", "빈도수"]
         fig_bar = px.bar(top_n, x="감정", y="빈도수", title="최근 자주 느낀 감정 Top 5")
         st.plotly_chart(fig_bar, use_container_width=True)
