@@ -239,7 +239,7 @@ def show_main_page():
         st.markdown('</div>', unsafe_allow_html=True)
 
 
-    # 2️⃣ 감정 리포트 탭 
+    # 2️⃣ 감정 리포트 탭
     elif page == "감정 리포트":
         st.title("📊 감정 변화 트렌드")
 
