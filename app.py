@@ -247,7 +247,7 @@ def show_main_page():
             end_date   = st.date_input("종료일", value=max_date, min_value=min_date, max_value=max_date)
             period = st.radio("집계 단위", ["일별", "주별", "월별"], horizontal=True)
 
-            emotions = sorted(report_df["감정 카테고리리"].unique())
+            emotions = sorted(report_df["감정 카테고리"].unique())
             selected = st.multiselect("표시할 감정 선택", emotions, default=emotions)
 
         # 2) 일/주/월 감정 트렌드 Plotly 그래프
@@ -311,7 +311,7 @@ def show_main_page():
     # ──────────────────────────────
     elif page == "맞춤형 컨텐츠 추천":
         st.title("맞춤형 컨텐츠 추천")
-
+      
 
 
 
