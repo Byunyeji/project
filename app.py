@@ -6,7 +6,7 @@ import re
 from datetime import date
 from backend.auth import register, login
 from backend.chatbot import generate_response
-from reports import plot_emotion_trend, get_emotion_report, create_pdf_report
+from reports import plot_emotion_trend_plotly, get_emotion_report, create_pdf_report
 import pandas as pd
 import matplotlib.pyplot as plt
 from backend.db import get_region_list
