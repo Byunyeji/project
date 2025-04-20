@@ -81,19 +81,3 @@ def create_pdf_report(login_id: str) -> bytes:
     doc.build(elements)
     return buffer.getvalue()
 
-def create_emotion_heatmap_data(df: pd.DataFrame) -> pd.DataFrame:
-    df["요일"] = pd.to_datetime(df["분석 날짜"]).dt.day_name()
-    df["주차"] = pd.to_datetime(df["분석 날짜"]).dt.isocalendar().week
-    heatmap_df = df.groupby(["주차", "요일"])["감정 확신도"].mean().unstack().fillna(0)
-    return heatmap_df
-
-def calc_emotion_change(df: pd.DataFrame) -> float:
-    df = df.sort_values("분석 날짜")
-    today = pd.to_datetime(df["분석 날짜"]).max()
-    recent = df[df["분석 날짜"] >= today - pd.Timedelta(days=7)]
-    past = df[df["분석 날짜"] < today - pd.Timedelta(days=7)]
-
-    if recent.empty or past.empty:
-        return 0.0
-
-    return recent["감정 확신도"].mean() - past["감정 확신도"].mean()
