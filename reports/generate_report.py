@@ -80,4 +80,3 @@ def create_pdf_report(login_id: str) -> bytes:
 
     doc.build(elements)
     return buffer.getvalue()
-
