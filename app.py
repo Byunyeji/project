@@ -341,7 +341,7 @@ if not st.session_state["logged_in"]:
 st.write("로그인된 사용자:", st.session_state.get("username"))
 show_main_page()
 
-
+   
 # # 배포 시
 # if "logged_in" not in st.session_state:
 #     st.session_state["logged_in"] = False
